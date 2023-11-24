@@ -4,10 +4,25 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Scanner;
 
 public class Main {
 
 	public static void main(String[] args) {
+		
+		Scanner in = new Scanner(System.in);
+		System.out.println("vuoi filtrare la ricerca? (y/n)");
+		String wannaFilter = in.nextLine();
+		
+		boolean filter = (wannaFilter.equals("y")? true:false);
+		String word = null;
+		
+		if(filter) {
+			
+			System.out.println("per che parola vuoi filtrare?");
+			
+			word = in.nextLine();
+		}
 		
 		String url = "jdbc:mysql://localhost:3306/db-nations";
 		String user = "root";
@@ -21,9 +36,17 @@ public class Main {
 						 + 		"ON countries.region_id = regions.region_id "
 						 + "JOIN continents "
 						 + 		"ON continents.continent_id = regions.continent_id "
+						 + (filter ? "WHERE countries.name LIKE ? " : "WHERE 1" )
 						 + "ORDER BY countries.name;";
 			
+//			System.out.println(query);
+			
 			try( PreparedStatement ps = con.prepareStatement(query)){
+				
+				if(filter) {
+					
+					ps.setString(1, "%" + word + "%");
+				}
 				
 				try(ResultSet rs = ps.executeQuery()) {
 					
@@ -44,6 +67,10 @@ public class Main {
 		
 		catch(Exception e) {
 			System.out.println("error:" + e.getMessage());
+		}
+		
+		finally {
+			in.close();
 		}
 		
 	}
